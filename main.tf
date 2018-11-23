@@ -61,8 +61,8 @@ resource "aws_route53_health_check" "falkenstein_health" {
 
 # Create A records for DNS weighting
 resource "aws_route53_record" "tradefox_nuremberg" {
-  zone_id = "/hostedzone/Z15ZD56PW5R6X3"
-  name    = "tradefox.biz."
+  zone_id = "your_zone_id"
+  name    = "your_name"
   type    = "A"
   ttl     = "60"
 
@@ -75,8 +75,8 @@ resource "aws_route53_record" "tradefox_nuremberg" {
   health_check_id = "${aws_route53_health_check.nuremberg_health.id}"
 }
 resource "aws_route53_record" "tradefox_falkenstein" {
-  zone_id = "/hostedzone/Z15ZD56PW5R6X3"
-  name    = "tradefox.biz."
+  zone_id = "your_zone_id"
+  name    = "your_name"
   type    = "A"
   ttl     = "60"
 
@@ -91,16 +91,16 @@ resource "aws_route53_record" "tradefox_falkenstein" {
 
 # DNS records for pushing streams
 resource "aws_route53_record" "nuremberg_push" {
-  zone_id = "/hostedzone/Z15ZD56PW5R6X3"
-  name    = "nuremberg.tradefox.biz."
+  zone_id = "your_zone_id"
+  name    = "your_name"
   type    = "A"
   ttl     = "60"
   records = ["${hcloud_server.nuremberg.ipv4_address}"]
 }
 
 resource "aws_route53_record" "falkenstein_push" {
-  zone_id = "/hostedzone/Z15ZD56PW5R6X3"
-  name    = "falkenstein.tradefox.biz."
+  zone_id = "your_zone_id"
+  name    = "your_name"
   type    = "A"
   ttl     = "60"
   records = ["${hcloud_server.falkenstein.ipv4_address}"]
@@ -109,7 +109,7 @@ resource "aws_route53_record" "falkenstein_push" {
 # Create Alarms
 resource "aws_cloudwatch_metric_alarm" "alarm_nuremberg" {
   alarm_name = "${hcloud_server.nuremberg.name}"
-  alarm_actions = ["arn:aws:sns:us-east-1:991445153020:Nuremberg1_is_down"]
+  alarm_actions = ["your_sns_topic"]
   comparison_operator = "LessThanThreshold"
   ok_actions = []
   evaluation_periods = "1"
@@ -129,7 +129,7 @@ resource "aws_cloudwatch_metric_alarm" "alarm_nuremberg" {
 
   resource "aws_cloudwatch_metric_alarm" "alarm_falkenstein" {
   alarm_name = "${hcloud_server.falkenstein.name}"
-  alarm_actions = ["arn:aws:sns:us-east-1:991445153020:Falkenstein1_down"]
+  alarm_actions = ["your_sns_topic"]
   comparison_operator = "LessThanThreshold"
   ok_actions = []
   evaluation_periods = "1"
