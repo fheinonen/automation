@@ -1,2 +1,2 @@
 # automation
-Ansible and terraform projects
+Ansible and terraform project for multi-bitrate HLS streaming
