@@ -41,7 +41,7 @@ resource "aws_route53_health_check" "health_check" {
 # Create weighted A record(s) for server(s)
 resource "aws_route53_record" "tradefox" {
   count                            = "${var.server_count}"
-  zone_id                          = "/hostedzone/Z15ZD56PW5R6X3"
+  zone_id                          = "your_zone_id"
   name                             = ""
   type                             = "A"
   ttl                              = "60"
@@ -55,8 +55,8 @@ resource "aws_route53_record" "tradefox" {
 # Create unique A record(s) for server(s)
 resource "aws_route53_record" "push" {
   count   = "${var.server_count}"
-  zone_id = "/hostedzone/Z15ZD56PW5R6X3"
-  name    = "${count.index + 1}.tradefox.biz."
+  zone_id = "your_zone_id"
+  name    = "${count.index + 1}.yourdomain.com."
   type    = "A"
   ttl     = "60"
   records = ["${element(hcloud_server.video.*.ipv4_address, count.index)}"]
@@ -66,7 +66,7 @@ resource "aws_route53_record" "push" {
 resource "aws_cloudwatch_metric_alarm" "alarm" {
   count                     = "${var.server_count}"
   alarm_name                = "Alarm${count.index + 1}-${element(var.location, count.index)}"
-  alarm_actions             = ["arn:aws:sns:us-east-1:991445153020:Nuremberg1_is_down"]
+  alarm_actions             = ["your_sns_topic"]
   comparison_operator       = "LessThanThreshold"
   ok_actions                = []
   evaluation_periods        = "1"
@@ -76,7 +76,7 @@ resource "aws_cloudwatch_metric_alarm" "alarm" {
   statistic                 = "Minimum"
   threshold                 = "1.0"
   evaluation_periods        = "1"
-  alarm_description         = "This metric monitors streaming server nuremberg livestream"
+  alarm_description         = "your_description"
   insufficient_data_actions = []
   actions_enabled           = "true"
 
