@@ -26,7 +26,7 @@ resource "hcloud_server" "video" {
 # Create multianswer A record(s) for server(s)
 resource "aws_route53_record" "tradefox" {
   count = "${var.server_count}"
-  zone_id = "/hostedzone/Z15ZD56PW5R6X3"
+  zone_id = "${var.dns_zone_id}"
   name = "${var.domain}"
   type    = "A"
   ttl     = "60"
@@ -39,7 +39,7 @@ resource "aws_route53_record" "tradefox" {
 # # Create multianswer AAAA record(s) for server(s)
 resource "aws_route53_record" "tradefoxv6" {
   count = "${var.server_count}"
-  zone_id = "/hostedzone/Z15ZD56PW5R6X3"
+  zone_id = "${var.dns_zone_id}"
   name = "${var.domain}"
   type    = "AAAA"
   ttl     = "${var.A_record_TTL}"
@@ -52,7 +52,7 @@ resource "aws_route53_record" "tradefoxv6" {
 # Create unique A record(s) for server(s)
 resource "aws_route53_record" "push" {
   count = "${var.server_count}"
-  zone_id = "/hostedzone/Z15ZD56PW5R6X3"
+  zone_id = "${var.dns_zone_id}"
   name    = "${element(var.hostname, count.index)}${count.index + 1}-${element(var.location, count.index)}.${var.domain}."
   type    = "A"
   ttl     = "${var.A_record_TTL}"
@@ -61,7 +61,7 @@ resource "aws_route53_record" "push" {
 # Create unique AAAA record(s) for server(s)
 resource "aws_route53_record" "pushv6" {
   count = "${var.server_count}"
-  zone_id = "/hostedzone/Z15ZD56PW5R6X3"
+  zone_id = "${var.dns_zone_id}"
   name    = "${element(var.hostname, count.index)}${count.index + 1}-${element(var.location, count.index)}.${var.domain}."
   type    = "AAAA"
   ttl     = "${var.A_record_TTL}"

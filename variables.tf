@@ -16,3 +16,5 @@ variable "aws_secret_key" {}
 variable "A_record_TTL" {}
 
 variable "domain" {}
+
+variable "dns_zone_id" {}
