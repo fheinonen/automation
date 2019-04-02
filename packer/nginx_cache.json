@@ -4,7 +4,7 @@
    "type": "hcloud",
    "name": "nginx_cache",
    "snapshot_name": "nginx_cache_{{timestamp}}",
-   "token": "8kFVkw5TJmDqgB6pZNgYyZJnI7VoeFVdKrebTrYZuVlGNIm0Ju8qWVbxshzlLt7k",
+   "token": "your_token",
    "image": "ubuntu-18.04",
    "location": "nbg1",
    "server_type": "cx11",

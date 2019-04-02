@@ -1,7 +1,7 @@
 ---
 - hosts: all
   vars:
-   nginx_version: "nginx-1.15.9"
+   nginx_version: "nginx-1.15.10"
    rtmp_version: "1.2.1"
    home_path: "/root/"
    users:
@@ -125,11 +125,6 @@
      become: yes
      template: src=nginx.j2 dest=/etc/systemd/system/nginx.service
 
-   - name: mount /HLS/live to tmpfs (RAM)
-     become:
-     lineinfile:
-      path: /etc/fstab
-      line: "tmpfs /HLS/live tmpfs defaults,size=1G 0 0"
 
    - name: enable service nginx and ensure it is not masked
      become: yes
