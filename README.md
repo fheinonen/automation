@@ -1,2 +1,2 @@
 # automation
-Nginx, ansible and terraform project for multi-bitrate HLS streaming
+Nginx, packer, ansible and terraform project for multi-bitrate HLS streaming
