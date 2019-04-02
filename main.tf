@@ -27,7 +27,7 @@ resource "hcloud_server" "video" {
 resource "aws_route53_record" "tradefox" {
   count = "${var.server_count}"
   zone_id = "/hostedzone/Z15ZD56PW5R6X3"
-  name = "tradefox.biz"
+  name = "${var.domain}"
   type    = "A"
   ttl     = "60"
   multivalue_answer_routing_policy  = "true"
@@ -40,7 +40,7 @@ resource "aws_route53_record" "tradefox" {
 resource "aws_route53_record" "tradefoxv6" {
   count = "${var.server_count}"
   zone_id = "/hostedzone/Z15ZD56PW5R6X3"
-  name = "tradefox.biz"
+  name = "${var.domain}"
   type    = "AAAA"
   ttl     = "${var.A_record_TTL}"
   multivalue_answer_routing_policy  = "true"
@@ -53,7 +53,7 @@ resource "aws_route53_record" "tradefoxv6" {
 resource "aws_route53_record" "push" {
   count = "${var.server_count}"
   zone_id = "/hostedzone/Z15ZD56PW5R6X3"
-  name    = "${element(var.hostname, count.index)}${count.index + 1}-${element(var.location, count.index)}.tradefox.biz."
+  name    = "${element(var.hostname, count.index)}${count.index + 1}-${element(var.location, count.index)}.${var.domain}."
   type    = "A"
   ttl     = "${var.A_record_TTL}"
   records = ["${element(hcloud_server.video.*.ipv4_address, count.index)}"]
@@ -62,7 +62,7 @@ resource "aws_route53_record" "push" {
 resource "aws_route53_record" "pushv6" {
   count = "${var.server_count}"
   zone_id = "/hostedzone/Z15ZD56PW5R6X3"
-  name    = "${element(var.hostname, count.index)}${count.index + 1}-${element(var.location, count.index)}.tradefox.biz."
+  name    = "${element(var.hostname, count.index)}${count.index + 1}-${element(var.location, count.index)}.${var.domain}."
   type    = "AAAA"
   ttl     = "${var.A_record_TTL}"
   records = ["${element(hcloud_server.video.*.ipv6_address, count.index)}1"]
@@ -95,7 +95,7 @@ resource "aws_cloudwatch_metric_alarm" "alarm" {
   statistic = "Minimum"
   threshold = "1.0"
   evaluation_periods = "1"
-  alarm_description = "This metric monitors streaming server nuremberg livestream"
+  alarm_description = "This metric monitors streaming server livestream"
   insufficient_data_actions = []
   actions_enabled = "true"
   dimensions = {
