@@ -85,7 +85,7 @@ resource "aws_route53_health_check" "health_check" {
 resource "aws_cloudwatch_metric_alarm" "alarm" {
   count = "${var.server_count}"
   alarm_name = "Alarm-${element(var.hostname, count.index)}${count.index + 1}-${element(var.location, count.index)}"
-  alarm_actions = ["arn:aws:sns:us-east-1:991445153020:Nuremberg1_is_down"]
+  alarm_actions = ["your_sns_topic"]
   comparison_operator = "LessThanThreshold"
   ok_actions = []
   evaluation_periods = "1"
