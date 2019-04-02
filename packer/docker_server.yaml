@@ -1,0 +1,77 @@
+---
+- hosts: all
+  vars:
+   users:
+   - anigma
+
+  
+
+
+  tasks:
+
+   - name: "Create user accounts and add users to groups"
+     become: yes
+     user:
+      name: "{{ item }}"
+      groups: "sudo"
+     with_items: "{{ users }}"
+
+   - name: "Add authorized keys"
+     authorized_key:
+      user: "{{ item }}"
+      state: present
+      key: "{{ lookup('file', '/home/{{ item }}/.ssh/id_rsa.pub') }}"
+     with_items: "{{ users }}"
+
+   - name: "Allow admin users to sudo without a password"
+     become: yes
+     lineinfile:
+      dest: "/etc/sudoers" # path: in version 2.3
+      state: "present"
+      regexp: "^%sudo"
+      line: "%sudo ALL=(ALL) NOPASSWD: ALL"
+
+   - name: Create monitoring directory
+     become: yes
+     file:
+      path: /home/anigma/monitoring
+      state: directory
+      owner: root
+      mode: 0755
+
+   - name: install docker compose file
+     become: yes
+     template: src=docker-compose.j2 dest=/root/docker-compose.yaml
+  
+   - name: Allow OpenSSH rule
+     ufw:
+      rule: allow
+      name: OpenSSH
+
+   - name: Allow grafana rule
+     ufw:
+      rule: allow
+      port: 3000
+      proto: tcp
+
+   - name: Allow telegraf rule
+     ufw:
+      rule: allow
+      port: 8086
+      proto: tcp
+ 
+
+   - name: Allow http_stub rule
+     ufw:
+      rule: allow
+      port: 9090
+      proto: tcp
+
+   - name: Enable ufw
+     ufw:
+      state: enabled
+      
+   - name: Remove unnecessary packages
+     apt:
+      autoclean: yes
+      autoremove: yes

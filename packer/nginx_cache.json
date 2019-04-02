@@ -1,0 +1,33 @@
+{
+ "builders": [
+  {
+   "type": "hcloud",
+   "name": "nginx_cache",
+   "snapshot_name": "nginx_cache_{{timestamp}}",
+   "token": "8kFVkw5TJmDqgB6pZNgYyZJnI7VoeFVdKrebTrYZuVlGNIm0Ju8qWVbxshzlLt7k",
+   "image": "ubuntu-18.04",
+   "location": "nbg1",
+   "server_type": "cx11",
+   "ssh_username": "root",
+   "ssh_keys": "Hetzner-key"
+  }
+ ],
+ "provisioners": [
+  {
+   "type": "shell",
+   "script": "./python.sh"
+  },
+  {
+   "type": "ansible", 
+   "playbook_file": "./telegraf.yaml"
+  },
+  {
+   "type": "ansible",
+   "playbook_file": "./nginx_cache.yaml"
+  },
+  {
+   "type": "ansible",
+   "playbook_file": "./docker.yaml"
+  }
+ ]
+}

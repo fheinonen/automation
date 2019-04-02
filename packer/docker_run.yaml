@@ -1,0 +1,50 @@
+---
+- hosts: all
+  vars:
+   home_path: "/home/anigma/monitoring"
+   users:
+   - anigma
+
+  
+
+
+  tasks:
+
+
+   - name: create monitoring network
+     become: yes
+     docker_network:
+      name: monitoring
+      state: present
+
+   - name: create volume grafana
+     become: yes
+     docker_volume:
+      name: grafana-volume
+
+
+   - name: create volume grafana
+     become: yes
+     docker_volume:
+      name: influxdb-volume
+
+   - name: "Run docker influxDB initializiation"
+     become: yes
+     docker_container:
+      name: influxdb
+      image: influxdb
+      auto_remove: yes
+      command: /init-influxdb.sh
+      volumes:
+       - influxdb-volume:/var/lib/influxdb
+      env:
+       INFLUXDB_DB: "telegraf"
+       INFLUXDB_ADMIN_ENABLED: "true"
+       INFLUXDB_ADMIN_USER: "admin"
+       INFLUXDB_ADMIN_PASSWORD: "Amgina99"
+       INFLUXDB_USER: "telegraf"
+       INFLUXDB_USER_PASSWORD: "Amgina99"
+    
+   - name: Run docker compose
+     become: yes
+     command: docker-compose up -d

@@ -1,0 +1,33 @@
+{
+ "builders": [
+  {
+   "type": "hcloud",
+   "name": "grafana",
+   "snapshot_name": "grafana-{{timestamp}}",
+   "token": "8kFVkw5TJmDqgB6pZNgYyZJnI7VoeFVdKrebTrYZuVlGNIm0Ju8qWVbxshzlLt7k",
+   "image": "ubuntu-18.04",
+   "location": "nbg1",
+   "server_type": "cx11",
+   "ssh_username": "root",
+   "ssh_keys": "Hetzner-key"
+  }
+ ],
+ "provisioners": [
+  {
+   "type": "shell",
+   "script": "./python.sh"
+  },
+  {
+   "type": "ansible",
+   "playbook_file": "./docker_server.yaml"
+  },
+  {
+   "type": "ansible",
+   "playbook_file": "./docker.yaml"
+  },
+  {
+   "type": "ansible",
+   "playbook_file": "./docker_run.yaml"
+  }
+ ]
+}

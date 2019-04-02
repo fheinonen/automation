@@ -1,0 +1,267 @@
+---
+- hosts: all
+  vars:
+   nginx_version: "nginx-1.15.9"
+   rtmp_version: "1.2.1"
+   home_path: "/root/"
+   users:
+   - anigma
+
+  
+
+
+  tasks:
+
+
+   - name: Install required packages for compiling and transcoding video nginx
+     become: yes
+     apt:
+      name: "{{ packages }}"
+     vars:
+      packages:
+      - build-essential
+      - libpcre3 
+      - libpcre3-dev
+      - libssl-dev
+      - zlib1g-dev     
+      - fail2ban
+      - logrotate 
+      - virtualenv
+      - vnstat
+      - geoip-database 
+      - libgeoip-dev 
+      - libgeoip1      
+      
+
+   - name: Upgrade all packages to the latest version
+     become: yes
+     apt:
+      name: "*"
+      state: latest
+
+   - name: install telegraf conf unit file
+     become: yes
+     template: src=telegraf.j2 dest=/etc/telegraf/telegraf.conf   
+
+   - name: download and extract latest nginx source code
+
+     unarchive:
+      src: https://nginx.org/download/{{ nginx_version }}.tar.gz
+      dest: "{{ home_path }}"
+      remote_src: yes
+
+  # - name: download geostat
+   #  git:
+   #   repo: git@github.com:ratibor78/geostat.git
+    #  dest: /root
+      
+
+   - name: Configuring NGINX source
+   
+     command: ./configure --prefix=/usr/share/nginx \
+            --sbin-path=/usr/sbin/nginx \
+            --modules-path=/usr/lib/nginx/modules \
+            --conf-path=/etc/nginx/nginx.conf \
+            --error-log-path=/var/log/nginx/error.log \
+            --http-log-path=/var/log/nginx/access.log \
+            --pid-path=/run/nginx.pid \
+            --lock-path=/var/lock/nginx.lock \
+            --user=www-data \
+            --group=www-data \
+            --build=Ubuntu \ 
+            --with-http_ssl_module \
+            --with-file-aio \
+            --with-http_stub_status_module \
+     args:
+      chdir: "{{ home_path }}{{ nginx_version }}"
+
+   - name: Installing NGINX   
+     become: yes
+     make:
+      target: install
+      chdir: "{{ home_path }}{{ nginx_version }}"
+
+   - name: Create required HLS directory
+     become: yes
+     file:
+      path: /HLS/live
+      state: directory
+      owner: root
+      mode: 0755
+
+   - name: mount tmpfs as /tmp
+     become: yes
+     mount: 
+      path: /HLS/live
+      src: tmpfs
+      fstype: tmpfs 
+      opts: size=1024m 
+      state: mounted
+
+   - name: Create nginx sites available and sites enabled directory
+     become: yes
+     file:
+      path: "{{ item }}"
+      state: directory
+      owner: root
+      mode: 0755
+     loop:
+      - /etc/nginx/sites-enabled
+      - /etc/nginx/sites-available
+
+
+
+   - name: Create symbolic link for nginx sites available and sites enabled directories
+     become: yes
+     file:
+      src: /etc/nginx/sites-available
+      dest: /etc/nginx/sites-enabled
+      state: link
+      owner: root
+      mode: 0755
+      force: yes
+
+   - name: install nginx conf unit file
+     become: yes
+     template: src=nginx_cache.j2 dest=/etc/nginx/nginx.conf   
+
+   - name: install nginx systemd unit file
+     become: yes
+     template: src=nginx.j2 dest=/etc/systemd/system/nginx.service
+
+   - name: enable service httpd and ensure it is not masked
+     become: yes
+     systemd:
+      name: nginx.service
+      enabled: yes
+      masked: no
+
+   - name: Modprobe netfilter kernel module
+     become: yes
+     modprobe:
+      name: nf_conntrack_ipv4
+      state: present
+
+
+   - name: Add netfilter module to /etc/modules
+     become: yes
+     lineinfile:
+      path: /etc/modules
+      line: nf_conntrack_ipv4
+
+   - name: Optimizing network stack from sysctl.conf
+     become: yes
+     sysctl:
+      name: "{{ item.setting }}"
+      value: "{{ item.number }}"
+      state: "{{ item.state }}"
+      reload: yes
+      sysctl_set: yes
+     loop: "{{ sysctl_settings|flatten(levels=1) }}"
+     vars:
+      sysctl_settings:
+        - setting: "fs.inotify.max_user_instances"
+          number: "1048576"
+          state: "present"
+        - setting: "fs.inotify.max_user_watches"
+          number: "1048576"
+          state: "present"
+        - setting: "fs.nr_open"
+          number: "1048576"
+          state: "present" 
+        - setting: "net.core.netdev_max_backlog"
+          number: "1048576"
+          state: "present"
+        - setting: "net.core.rmem_max"
+          number: "16777216"
+          state: "present"
+        - setting: "net.core.somaxconn"
+          number: "65535"
+          state: "present"
+        - setting: "net.core.wmem_max"
+          number: "16777216"
+          state: "present"
+        - setting: "net.ipv4.ip_local_port_range"
+          number: "1024 65535"
+          state: "present"
+        - setting: "net.nf_conntrack_max"
+          number: "1048576"
+          state: "present"
+        - setting: "net.ipv4.tcp_fin_timeout"
+          number: "5"
+          state: "present"
+        - setting: "net.ipv4.tcp_max_orphans"
+          number: "1048576"
+          state: "present"
+        - setting: "net.ipv4.tcp_max_syn_backlog"
+          number: "20480"
+          state: "present"
+        - setting: "net.ipv4.tcp_max_tw_buckets"
+          number: "400000"
+          state: "present"
+        - setting: "net.ipv4.tcp_no_metrics_save"
+          number: "1"
+          state: "present"
+        - setting: "net.ipv4.tcp_rmem"
+          number: "4096 87380 16777216"
+          state: "present"
+        - setting: "net.ipv4.tcp_synack_retries"
+          number: "2"
+          state: "present"
+        - setting: "net.ipv4.tcp_syn_retries"
+          number: "2"
+          state: "present"
+        - setting: "net.ipv4.tcp_tw_reuse"
+          number: "1"
+          state: "present"
+        - setting: "net.ipv4.tcp_wmem"
+          number: "4096 65535 16777216"
+          state: "present"
+
+   - name: "Create user accounts and add users to groups"
+     become: yes
+     user:
+      name: "{{ item }}"
+      groups: "sudo,www-data"
+     loop: "{{ users|flatten(levels=1) }}"
+
+   - name: "Add authorized keys"
+     authorized_key:
+      user: "{{ item }}"
+      state: present
+      key: "{{ lookup('file', '/home/{{ item }}/.ssh/id_rsa.pub') }}"
+     loop: "{{ users|flatten(levels=1) }}"
+
+   - name: "Allow admin users to sudo without a password"
+     become: yes
+     lineinfile:
+      dest: "/etc/sudoers" # path: in version 2.3
+      state: "present"
+      regexp: "^%sudo"
+      line: "%sudo ALL=(ALL) NOPASSWD: ALL"
+  
+   - name: Allow OpenSSH rule
+     ufw:
+      rule: allow
+      name: OpenSSH
+
+   - name: Allow http rule
+     ufw:
+      rule: allow
+      port: 80
+      proto: tcp
+
+   - name: Allow http_stub rule
+     ufw:
+      rule: allow
+      port: 9090
+      proto: tcp
+
+   - name: Enable ufw
+     ufw:
+      state: enabled
+      
+   - name: Remove unnecessary packages
+     apt:
+      autoclean: yes
+      autoremove: yes
