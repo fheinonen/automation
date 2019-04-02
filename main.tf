@@ -29,7 +29,7 @@ resource "aws_route53_record" "tradefox" {
   zone_id = "${var.dns_zone_id}"
   name = "${var.domain}"
   type    = "A"
-  ttl     = "60"
+  ttl     = "${var.A_record_TTL}"
   multivalue_answer_routing_policy  = "true"
 
   set_identifier = "${element(var.hostname, count.index)}${count.index + 1}-${element(var.location, count.index)}"
