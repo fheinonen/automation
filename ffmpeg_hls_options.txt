@@ -1,0 +1,1 @@
+ffmpeg.exe -i "input_file -c:v libx264 -b:v 1200k -c:a aac -b:a 64k  -profile:v main -level 4.0 -sc_threshold 0 -g 75 -keyint_min 75 -maxrate 1320k -bufsize 1200k -vf "scale=854:trunc(ow/a/2)*2"  -preset veryfast -f hls -hls_time 6 -hls_playlist_type event -hls_flags independent_segments stream.m3u8
